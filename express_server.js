@@ -13,6 +13,10 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase)
 });
@@ -21,6 +25,7 @@ app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };//ejs automatically knows to look in the views directory becuase this is express convention
   res.render("urls_index", templateVars);
 });
+
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
