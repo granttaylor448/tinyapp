@@ -46,9 +46,9 @@ app.get("/u/:shortURL", (req, res) => {
   let short = req.params.shortURL;
   let http = "https://"
   let longURL = urlDatabase[short];
-  if (!longURL.includes("https://")) {
-    longURL = http.concat(longURL) 
-  } 
+  // if (!longURL.startsWith("https://")) {
+    // longURL = http.concat(longURL) 
+  // } 
   res.redirect(longURL);
   
 });
