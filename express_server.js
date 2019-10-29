@@ -18,7 +18,7 @@ function generateRandomString() {
   for (var i = 0; i < 6; i ++ ) {
     result += chars.charAt(Math.floor(Math.random() * 36))
   }
-  console.log(result);
+  return result;
  
 }
 
@@ -28,13 +28,29 @@ app.get("/", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+  console.log("urls_new")
   
 
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  console.log(generateRandomString(), req.body.longURL);
+  let short = generateRandomString()
+    urlDatabase[short] = req.body.longURL
+   res.redirect(`/urls/${short}`)
+  console.log(urlDatabase)
+
+         // Respond with 'Ok' (we will replace this)
+});
+app.get("/u/:shortURL", (req, res) => {
+  let short = req.params.shortURL;
+  let http = "https://"
+  let longURL = urlDatabase[short];
+  if (!longURL.includes("https://")) {
+    longURL = http.concat(longURL) 
+  } 
+  res.redirect(longURL);
+  
 });
 
 app.get("/urls.json", (req, res) => {
