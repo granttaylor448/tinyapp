@@ -28,33 +28,41 @@ app.get("/", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
-  console.log("urls_new")
+  // console.log("urls_new")
   
 
 });
 
 app.post("/urls", (req, res) => {
-  console.log(generateRandomString(), req.body.longURL);
+  // console.log(generateRandomString(), req.body.longURL);
   let short = generateRandomString()
     urlDatabase[short] = req.body.longURL
    res.redirect(`/urls/${short}`)
-  console.log(urlDatabase)
-
-         // Respond with 'Ok' (we will replace this)
+  // console.log(urlDatabase)
 });
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  let short = req.params.shortURL;
+  delete urlDatabase[short];
+  
+  res.redirect("/urls")
+});
+
+         
+
 app.get("/u/:shortURL", (req, res) => {
   let short = req.params.shortURL;
   let http = "https://"
   let longURL = urlDatabase[short];
-  // if (!longURL.startsWith("https://")) {
-    // longURL = http.concat(longURL) 
-  // } 
+  if (!longURL.startsWith("https://") || !!longURL.startsWith("http://")) {
+    longURL = http.concat(longURL) 
+  } 
   res.redirect(longURL);
   
 });
 
 app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase)
+  res.json(urlDatabase) // for urlDatabase reference
 });
 
 app.get("/urls", (req, res) => {
@@ -73,5 +81,5 @@ app.get("/hello", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Snoop Dog here on port ${PORT}!`);
 });
