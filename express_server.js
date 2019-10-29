@@ -41,7 +41,15 @@ app.post("/urls", (req, res) => {
   // console.log(urlDatabase)
 });
 
+app.post("/urls/:shortURL/edit", (req, res) => {
+  let short = req.params.shortURL
+  urlDatabase[short] = req.body.longURL
+  
+  res.redirect(`/urls/${short}`)
+});
+
 app.post("/urls/:shortURL/delete", (req, res) => {
+  let longURL = req.params.longURL;
   let short = req.params.shortURL;
   delete urlDatabase[short];
   
@@ -54,7 +62,7 @@ app.get("/u/:shortURL", (req, res) => {
   let short = req.params.shortURL;
   let http = "https://"
   let longURL = urlDatabase[short];
-  if (!longURL.startsWith("https://") || !!longURL.startsWith("http://")) {
+  if (!longURL.startsWith("https://") && !longURL.startsWith("http://")) {
     longURL = http.concat(longURL) 
   } 
   res.redirect(longURL);
@@ -69,6 +77,7 @@ app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };//ejs automatically knows to look in the views directory becuase this is express convention
   res.render("urls_index", templateVars);
 });
+
 
 
 app.get("/urls/:shortURL", (req, res) => {
