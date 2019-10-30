@@ -15,6 +15,19 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 
 function generateRandomString() {
   let chars = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -23,7 +36,18 @@ function generateRandomString() {
     result += chars.charAt(Math.floor(Math.random() * 36))
   }
   return result;
- 
+}
+let loop = function (email) {
+  for (let item in users){
+    console.log("look", email, users[item]["email"] )
+    if (email === users[item]["email"]) {
+      return true
+    } else {
+      // console.log(req.body.email, users[item]["email"] )
+      return false
+      
+    }
+  }
 }
 
 app.get("/", (req, res) => {
@@ -34,10 +58,29 @@ app.get("/urls/new", (req, res) => {
   let templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_new", templateVars);
   // console.log("urls_new")
- 
-  
-
 });
+app.get("/register", (req, res) => {
+  let templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("registration", templateVars)
+});
+
+app.post("/register", (req, res) => {
+let RandomID = generateRandomString()
+let email = req.body.email;
+console.log("hi", email)
+
+if (req.body.email === "" || req.body.password ==="" || loop(email) === true ) {
+  res.status(400)
+  res.send("Error!")
+} else {
+  users[RandomID] = { id: RandomID , email: req.body.email, password: req.body.password }
+  console.log(users)
+  res.cookie('username', RandomID)
+  console.log(loop())
+  
+  res.redirect("/urls")
+}  
+})
 
 app.post("/urls", (req, res) => {
   // console.log(generateRandomString(), req.body.longURL);
