@@ -19,7 +19,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "123"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -38,30 +38,44 @@ function generateRandomString() {
   return result;
 }
 let loop = function (email) {
+  let output =false
   for (let item in users){
     console.log("look", email, users[item]["email"] )
     if (email === users[item]["email"]) {
-      return true
+      output =true
     } else {
       // console.log(req.body.email, users[item]["email"] )
-      return false
+      output = output
       
     }
-  }
+  } return output
 }
+
+
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  
+  let templateVars = { user_id : req.cookies["user_id"], user: users, urls: urlDatabase  };
   res.render("urls_new", templateVars);
   // console.log("urls_new")
 });
 app.get("/register", (req, res) => {
-  let templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  // users[RandomID] = { id: RandomID , email: req.body.email, password: req.body.password }
+  
+  let templateVars = { user_id : req.cookies["user_id"], urls: urlDatabase  };
+
   res.render("registration", templateVars)
+});
+
+app.get("/login", (req, res) => {
+  let templateVars = { user_id : req.cookies["user_id"], user: users, urls: urlDatabase  };
+  // console.log(templateVars)
+  // console.log(users)
+  res.render("login", templateVars)
 });
 
 app.post("/register", (req, res) => {
@@ -71,14 +85,14 @@ console.log("hi", email)
 
 if (req.body.email === "" || req.body.password ==="" || loop(email) === true ) {
   res.status(400)
-  res.send("Error!")
+  res.send("400 Error!")
 } else {
   users[RandomID] = { id: RandomID , email: req.body.email, password: req.body.password }
   console.log(users)
-  res.cookie('username', RandomID)
+  
   console.log(loop())
   
-  res.redirect("/urls")
+  res.redirect("/login")
 }  
 })
 
@@ -105,16 +119,37 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls")
 });
 
-app.post("/login", (req, res) => {
-  let login = req.body.username;
-  console.log(login)
-  res.cookie('username', login)
-  res.redirect("/urls")
-});
+app.post("/login", (req,res) => {
+  let email = req.body.email
+  let password = req.body.password
+  if (loop(email) === false) {
+    res.send("403 Error!")
+  }
+  if (loop(email) === true) {
+    for (let item in users){
+      if(email === users[item]["email"])
+      user_id = item
+    }
+    if (users[user_id]["password"] !== password){
+      res.send("OH NO! Your password doesnt match! go back!")
+    }
+    res.cookie('user_id', user_id)
+    res.redirect("/urls")
+  }
+  
+  // res.redirect("/login")
+})
+
+// app.post("/login", (req, res) => {
+  // let login = req.body.username;
+  // console.log(login)
+  // res.cookie('username', login)
+  // res.redirect("/urls")
+// });
 app.post("/logout", (req, res) => {
   // let login = req.body.username;
   // console.log(login)
-  res.clearCookie('username')
+  res.clearCookie('user_id')
   res.redirect("/urls")
 });
          
@@ -136,14 +171,14 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req, res) => {
   
-  let templateVars = { username: req.cookies["username"], urls: urlDatabase };//ejs automatically knows to look in the views directory becuase this is express convention
+  let templateVars = { user_id : req.cookies["user_id"], user: users, urls: urlDatabase  };//ejs automatically knows to look in the views directory becuase this is express convention
   res.render("urls_index", templateVars);
 });
 
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { user_id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars)
 });
 
