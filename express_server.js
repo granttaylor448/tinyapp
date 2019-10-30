@@ -7,6 +7,10 @@ app.set("view engine", "ejs")
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+const cookieParser = require('cookie-parser')
+app.use(cookieParser())
+
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -27,8 +31,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("urls_new", templateVars);
   // console.log("urls_new")
+ 
   
 
 });
@@ -56,6 +62,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls")
 });
 
+app.post("/login", (req, res) => {
+  let login = req.body.username;
+  console.log(login)
+  res.cookie('username', login)
+  res.redirect("/urls")
+});
+app.post("/logout", (req, res) => {
+  // let login = req.body.username;
+  // console.log(login)
+  res.clearCookie('username')
+  res.redirect("/urls")
+});
          
 
 app.get("/u/:shortURL", (req, res) => {
@@ -74,14 +92,15 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };//ejs automatically knows to look in the views directory becuase this is express convention
+  
+  let templateVars = { username: req.cookies["username"], urls: urlDatabase };//ejs automatically knows to look in the views directory becuase this is express convention
   res.render("urls_index", templateVars);
 });
 
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars)
 });
 
