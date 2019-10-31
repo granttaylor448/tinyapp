@@ -11,10 +11,10 @@ const cookieParser = require('cookie-parser')
 app.use(cookieParser())
 
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
+// const urlDatabase = {
+  // "b2xVn2": "http://www.lighthouselabs.ca",
+  // "9sm5xK": "http://www.google.com"
+// };
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -26,6 +26,10 @@ const users = {
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
+}
+const urlDatabase = {
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 }
 
 
@@ -40,7 +44,7 @@ function generateRandomString() {
 let loop = function (email) {
   let output =false
   for (let item in users){
-    console.log("look", email, users[item]["email"] )
+    // console.log("look", email, users[item]["email"] )
     if (email === users[item]["email"]) {
       output =true
     } else {
@@ -98,15 +102,31 @@ if (req.body.email === "" || req.body.password ==="" || loop(email) === true ) {
 
 app.post("/urls", (req, res) => {
   // console.log(generateRandomString(), req.body.longURL);
+  user_id = req.cookies["user_id"]
+
+  if (req.cookies["user_id"]) {
   let short = generateRandomString()
-    urlDatabase[short] = req.body.longURL
+  
+ 
+  urlDatabase[short] = { 
+      longURL: req.body.longURL, 
+      userID: user_id }
+    
+   
    res.redirect(`/urls/${short}`)
+  
+  } else {
+    res.redirect("/login")
+  }
   // console.log(urlDatabase)
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
   let short = req.params.shortURL
   urlDatabase[short] = req.body.longURL
+  if (urlsForUser(urlDatabase, req.cookies["user_id"].toString()) !== true ) {
+    res.redirect("/")
+  }
   
   res.redirect(`/urls/${short}`)
 });
@@ -115,11 +135,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   let longURL = req.params.longURL;
   let short = req.params.shortURL;
   delete urlDatabase[short];
-  
+  if (urlsForUser(urlDatabase, req.cookies["user_id"].toString()) !== true ) {
+    res.redirect("/")
+  }
   res.redirect("/urls")
 });
 
 app.post("/login", (req,res) => {
+  let usersURLs = {}
   let email = req.body.email
   let password = req.body.password
   if (loop(email) === false) {
@@ -157,7 +180,7 @@ app.post("/logout", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let short = req.params.shortURL;
   let http = "https://"
-  let longURL = urlDatabase[short];
+  let longURL = urlDatabase[short]["longURL"];
   if (!longURL.startsWith("https://") && !longURL.startsWith("http://")) {
     longURL = http.concat(longURL) 
   } 
@@ -170,15 +193,31 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  
-  let templateVars = { user_id : req.cookies["user_id"], user: users, urls: urlDatabase  };//ejs automatically knows to look in the views directory becuase this is express convention
+  let short = req.params.shortURL;
+ 
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login")
+  }
+  else {
+  let templateVars = { 
+    user_id : req.cookies["user_id"], 
+    user: users, 
+    urls: urlsForUser(urlDatabase, req.cookies["user_id"].toString()),
+  }
+    
   res.render("urls_index", templateVars);
+  };//ejs automatically knows to look in the views directory becuase this is express convention
 });
 
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { user_id: req.cookies["user_id"], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = {
+    user_id: req.cookies["user_id"],
+    user: users,
+    longURL: urlDatabase[req.params.shortURL]["longURL"],
+    shortURL: req.params.shortURL
+  };
   res.render("urls_show", templateVars)
 });
 
@@ -189,3 +228,15 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Snoop Dog here on port ${PORT}!`);
 });
+
+const urlsForUser = function( urlDatabase , user_id) {
+  let newObj = {};
+for (let item in urlDatabase) {
+  if (urlDatabase[item]["userID"] === user_id) {
+    
+    newObj[item] = urlDatabase[item];
+    
+  }  
+  }
+  return newObj
+}
