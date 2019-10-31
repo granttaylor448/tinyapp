@@ -10,6 +10,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser')
 app.use(cookieParser())
 
+const bcrypt = require('bcrypt');
+
 
 // const urlDatabase = {
   // "b2xVn2": "http://www.lighthouselabs.ca",
@@ -85,13 +87,15 @@ app.get("/login", (req, res) => {
 app.post("/register", (req, res) => {
 let RandomID = generateRandomString()
 let email = req.body.email;
+let password = req.body.password
+const hashedPassword = bcrypt.hashSync(password, 10);
 console.log("hi", email)
 
 if (req.body.email === "" || req.body.password ==="" || loop(email) === true ) {
   res.status(400)
   res.send("400 Error!")
 } else {
-  users[RandomID] = { id: RandomID , email: req.body.email, password: req.body.password }
+  users[RandomID] = { id: RandomID , email: req.body.email, password: hashedPassword }
   console.log(users)
   
   console.log(loop())
@@ -124,9 +128,9 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/edit", (req, res) => {
   let short = req.params.shortURL
   urlDatabase[short] = req.body.longURL
-  if (urlsForUser(urlDatabase, req.cookies["user_id"].toString()) !== true ) {
-    res.redirect("/")
-  }
+  // if (urlsForUser(urlDatabase, req.cookies["user_id"].toString()) !== true ) {
+    // res.redirect("/")
+  // }
   
   res.redirect(`/urls/${short}`)
 });
@@ -135,9 +139,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   let longURL = req.params.longURL;
   let short = req.params.shortURL;
   delete urlDatabase[short];
-  if (urlsForUser(urlDatabase, req.cookies["user_id"].toString()) !== true ) {
-    res.redirect("/")
-  }
+  // if (urlsForUser(urlDatabase, req.cookies["user_id"].toString()) !== true ) {
+    // res.redirect("/")
+  // }
   res.redirect("/urls")
 });
 
@@ -153,7 +157,8 @@ app.post("/login", (req,res) => {
       if(email === users[item]["email"])
       user_id = item
     }
-    if (users[user_id]["password"] !== password){
+    let hashedPassword = users[user_id]["password"]
+    if (!bcrypt.compareSync(password, hashedPassword)){
       res.send("OH NO! Your password doesnt match! go back!")
     }
     res.cookie('user_id', user_id)
