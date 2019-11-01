@@ -9,8 +9,6 @@ const { getUserByEmail } = require('./helpers');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-// const cookieParser = require('cookie-parser')
-// app.use(cookieParser())
 let cookieSession = require('cookie-session');
 
 app.use(cookieSession({
@@ -22,18 +20,8 @@ app.use(cookieSession({
 
 const bcrypt = require('bcrypt');
 
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "123"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
-};
+const users = {};
+
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
@@ -111,7 +99,7 @@ app.post("/urls", (req, res) => {
       userID: user_id };
     res.redirect(`/urls/${short}`);
   
-  } else { //this code may need to go!
+  } else { 
     res.redirect("/urls");
   }
 });
@@ -168,13 +156,8 @@ app.get("/u/:shortURL", (req, res) => {
   
   let short = req.params.shortURL;
   let http = "https://";
-  let bool = false;
-  for (let item in urlDatabase) {
-    if (short === item) {
-      bool = true;
-    }
-  }
-  if (bool) {
+
+  if (searchDatabase(short) === true) {
     let longURL = urlDatabase[short]["longURL"];
  
     if (!longURL.startsWith("https://") && !longURL.startsWith("http://")) {
@@ -213,16 +196,22 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   let short = req.params.shortURL;
-  if (!req.session["user_id"] || req.session.user_id !== urlDatabase[short]["userID"]) {
-    return res.status(403).send("<h5> 403 Forbidden you can't edit other peoples URL's! Or your short URL doesnt exist </h5>");
+
+  if (searchDatabase(short) === true) {
+
+    if (!req.session["user_id"] || req.session.user_id !== urlDatabase[short]["userID"]) {
+      return res.status(403).send("<h5> 403 Forbidden you can't edit or see other peoples URL's! </h5>");
+    }
+    let templateVars = {
+      user_id: req.session["user_id"],
+      user: users,
+      longURL: urlDatabase[req.params.shortURL]["longURL"],
+      shortURL: req.params.shortURL
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    return res.status(300).send("<h5> 403 Looks like that URL doesn't exist! </h5>");
   }
-  let templateVars = {
-    user_id: req.session["user_id"],
-    user: users,
-    longURL: urlDatabase[req.params.shortURL]["longURL"],
-    shortURL: req.params.shortURL
-  };
-  res.render("urls_show", templateVars);
 });
 
 app.get("/hello", (req, res) => {
@@ -242,3 +231,11 @@ const urlsForUser = function(urlDatabase , user_id) {
   }
   return newObj;
 };
+const searchDatabase = function (short) {
+  let bool = false;
+  for (let item in urlDatabase) {
+    if (short === item) {
+      bool = true;
+    }
+  } return bool;
+}
