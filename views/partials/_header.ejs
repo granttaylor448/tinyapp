@@ -11,7 +11,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-        <% if(user_id){ %>
+        <% if(user[user_id]){ %>
           <form class="form-inline" action="/logout" method="POST">
             <div class="form-group mb-2">
               <label for="user_id">Logged in As: <%= user[user_id]["email"] %> </label>
@@ -23,7 +23,7 @@
               <!-- </div> -->
               
 
-          <% } else{ %> 
+          <% } else { %> 
         
           <div class="form-group mb-2"> 
               <form class="form-inline" action="/login" method="GET">
