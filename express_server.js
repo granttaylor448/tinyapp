@@ -43,17 +43,17 @@ app.get("/", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (!req.session["user_id"]) {
     res.redirect("/login");
-  }
+  } else {
   let templateVars = { user_id : req.session["user_id"], user: users, urls: urlDatabase  };
   res.render("urls_new", templateVars);
-  
-});
-
-app.post("urls/new", (req, res) => {
-  if (!req.session["user_id"]) {
-    res.redirect("/login");
   }
 });
+
+// app.post("urls/new", (req, res) => {
+  // if (!req.session["user_id"]) {
+    // res.redirect("/login");
+  // }
+// });
 
 app.get("/register", (req, res) => {
   if (users[req.session["user_id"]]) {
