@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = process.env.port || 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
@@ -148,7 +148,7 @@ app.post("/login", (req,res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/login");
+  res.redirect("/");
 });
          
 
