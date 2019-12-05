@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "engines": {
-    "node": "8.9.4"
+    "node": "8.9.4",
+    "npm": "5.6.0"
   },
   "main": "express_server.js",
   "scripts": {
