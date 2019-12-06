@@ -11,7 +11,10 @@
     "type": "git",
     "url": "git+https://github.com/granttaylor448/tinyapp.git"
   },
-  "keywords": [],
+  "keywords": [
+    "example",
+    "heroku"
+  ],
   "author": "Grant Taylor granttaylor448@gmail.com",
   "license": "ISC",
   "bugs": {
